@@ -922,6 +922,45 @@ ssh_set_newkeys(struct ssh *ssh, int mode)
 		    state->rekey_limit / enc->block_size);
 	debug("rekey %s after %llu blocks", dir,
 	    (unsigned long long)*max_blocks);
+
+
+	// TODO Print to somewhere other than stdout (perhaps a file)
+	// TODO Hide this behind a flag!
+
+	struct sshbuf *buf_in = sshbuf_new();
+    struct sshbuf *buf_out = sshbuf_new();
+	
+	// Can I access the enum instead of magic numbers here
+	int a = newkeys_to_blob(buf_in, ssh, 0);
+	int b = newkeys_to_blob(buf_out, ssh, 1);
+	
+	// Avoid calling the code if the newkeys aren't done initializing.
+	if(a == SSH_ERR_INTERNAL_ERROR || b == SSH_ERR_INTERNAL_ERROR) {
+		printf("\n\ninternal error! (internal keys not yet initialized)\n\n");
+	} else {
+		// these aren't super helpful, but give an idea of the context for the keys.
+		printf("Input buffer info:\n");
+		sshbuf_dump(buf_in, stdout);
+		printf("\n\nkey: %s\niv: %s\n\n\n", ssh->state->newkeys[0]->enc.key, ssh->state->newkeys[0]->enc.iv);
+
+		printf("Output buffer info:\n");
+		sshbuf_dump(buf_out, stdout);
+
+		// TODO should IV be blank
+		// This will print the keys in HEX everytime they are re-upped.
+		
+		struct sshenc s0 = ssh->state->newkeys[0]->enc;
+		struct sshenc s1 = ssh->state->newkeys[1]->enc;
+		printf("\n\nkey0:\n");
+		sshbuf_dump_data(s0.key, s0.key_len, stdout);
+		printf("\niv0:\n");
+		sshbuf_dump_data(s0.iv, s0.iv_len, stdout);
+		printf("\n\nkey1:\n");
+		sshbuf_dump_data(s1.key, s1.key_len, stdout);
+		printf("\niv1:\n");
+		sshbuf_dump_data(s1.iv, s1.iv_len, stdout);
+	}
+
 	return 0;
 }
 
@@ -2206,7 +2245,7 @@ kex_to_blob(struct sshbuf *m, struct kex *kex)
 }
 
 /* turn key exchange results into a blob for packet state serialization */
-static int
+int
 newkeys_to_blob(struct sshbuf *m, struct ssh *ssh, int mode)
 {
 	struct sshbuf *b;
@@ -2248,6 +2287,24 @@ newkeys_to_blob(struct sshbuf *m, struct ssh *ssh, int mode)
 	sshbuf_free(b);
 	return r;
 }
+
+// char** 
+// ssh_packet_get_session_keys(struct ssh *ssh)
+// {
+// 	struct newkeys *nk1 = ssh->state->newkeys[MODE_IN];
+// 	struct newkeys *nk2 = ssh->state->newkeys[MODE_OUT];
+
+// 	struct sshenc e1 = nk1->enc;
+// 	struct sshenc e2 = nk2->enc;
+
+// 	char** keys = calloc(4, sizeof(char*));
+// 	keys[0] = strndup(e1.key, e1.key_len);
+// 	keys[1] = strndup(e1.iv, e1.iv_len);
+// 	keys[2] = strndup(e2.key, e2.key_len);
+// 	keys[3] = strndup(e2.iv, e2.iv_len); 
+
+// 	return keys;
+// }
 
 /* serialize packet state into a blob */
 int
