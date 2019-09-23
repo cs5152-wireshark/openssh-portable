@@ -125,8 +125,8 @@ cipher_alg_list(char sep, int auth_only)
 	const struct sshcipher *c;
 
 	for (c = ciphers; c->name != NULL; c++) {
-		if ((c->flags & CFLAG_INTERNAL) != 0)
-			continue;
+		//if ((c->flags & CFLAG_INTERNAL) != 0)
+		//	continue;
 		if (auth_only && c->auth_len == 0)
 			continue;
 		if (ret != NULL)
@@ -217,7 +217,7 @@ ciphers_valid(const char *names)
 	for ((p = strsep(&cp, CIPHER_SEP)); p && *p != '\0';
 	    (p = strsep(&cp, CIPHER_SEP))) {
 		c = cipher_by_name(p);
-		if (c == NULL || (c->flags & CFLAG_INTERNAL) != 0) {
+		if (c == NULL/* || (c->flags & CFLAG_INTERNAL) != 0*/) {
 			free(cipher_list);
 			return 0;
 		}
