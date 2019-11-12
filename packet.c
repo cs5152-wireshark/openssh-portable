@@ -957,20 +957,20 @@ ssh_set_newkeys(struct ssh *ssh, int mode)
 		int len0 = (int) s0.key_len;
 		int len1 = (int) s1.key_len;
 
-		debug("DUMP|KEY_LEN_0=%u|%i", s0.key_len, len0);
-		debug("DUMP|KEY_LEN_1=%u|%i", s1.key_len, len1);
+		debug("WSDUMP KEY_LEN_0 %u %i", s0.key_len, len0);
+		debug("WSDUMP KEY_LEN_1 %u %i", s1.key_len, len1);
 
 		char chars[s0.key_len * 2 + 5];
 		for (i = 0; i < len0; i += 1) {
-			sprintf((char*) chars + (2 * i), "%02x", s0.key[i]);
+			sprintf((char*) chars + (2 * i), "%02hhX", s0.key[i]);
 		}
-		debug("DUMP|KEY_DUMP_0=%s", chars);
+		debug("WSDUMP KEY_DUMP_0 %s", chars);
 		
 		char chars1[s1.key_len * 2 + 5];
 		for (i = 0; i < len1; i += 1) {
-			sprintf((char*)  (chars1 + (2 * i)), "%02x", s1.key[i]);
+			sprintf((char*)  (chars1 + (2 * i)), "%02hhX", s1.key[i]);
 		}
-		debug("DUMP|KEY_DUMP_1=%s", chars1);
+		debug("WSDUMP KEY_DUMP_1 %s", chars1);
 	}
 
 	return 0;

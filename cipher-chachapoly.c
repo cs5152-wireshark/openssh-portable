@@ -61,7 +61,7 @@ chachapoly_crypt(struct chachapoly_ctx *ctx, u_int seqnr, u_char *dest,
 		sprintf((char*)  (src_chars + (2 * i)), "%02x", src[i]);
 	}
 	sprintf((char *)(src_chars + (2 * i) + 1), "\n");
-	debug("DUMP|ENCRYPT=%s|SEQNR=%i|LEN=%u|AADLEN=%u|SRC=%s", encrypt_yes, seqnr, len, aadlen, src_chars);
+	debug("WSDUMP ENCRYPT %s SEQNR %i LEN %u AADLEN %u SRC %s", encrypt_yes, seqnr, len, aadlen, src_chars);
 	
 	u_char seqbuf[8];
 	const u_char one[8] = { 1, 0, 0, 0, 0, 0, 0, 0 }; /* NB little-endian */
