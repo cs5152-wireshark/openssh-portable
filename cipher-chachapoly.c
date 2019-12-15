@@ -52,17 +52,6 @@ int
 chachapoly_crypt(struct chachapoly_ctx *ctx, u_int seqnr, u_char *dest,
     const u_char *src, u_int len, u_int aadlen, u_int authlen, int do_encrypt)
 {
-	// WIRESHARK: DUMP
-	const char *encrypt_yes = do_encrypt ? "yes" : "no!";
-	int len1 = (int) (authlen + len + aadlen);
-	char src_chars[len1 * 2 + 5];
-	int i;
-	for (i = 0; i < len1; i += 1) {
-		sprintf((char*)  (src_chars + (2 * i)), "%02x", src[i]);
-	}
-	sprintf((char *)(src_chars + (2 * i) + 1), "\n");
-	debug("WSDUMP ENCRYPT %s SEQNR %i LEN %u AADLEN %u SRC %s", encrypt_yes, seqnr, len, aadlen, src_chars);
-	
 	u_char seqbuf[8];
 	const u_char one[8] = { 1, 0, 0, 0, 0, 0, 0, 0 }; /* NB little-endian */
 	u_char expected_tag[POLY1305_TAGLEN], poly_key[POLY1305_KEYLEN];

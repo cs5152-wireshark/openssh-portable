@@ -923,55 +923,38 @@ ssh_set_newkeys(struct ssh *ssh, int mode)
 	debug("rekey %s after %llu blocks", dir,
 	    (unsigned long long)*max_blocks);
 
-
-	// TODO Print to somewhere other than stdout (perhaps a file)
 	// TODO Hide this behind a flag!
-
-	struct sshbuf *buf_in = sshbuf_new();
-    struct sshbuf *buf_out = sshbuf_new();
 	
-	// Can I access the enum instead of magic numbers here
-	int a = newkeys_to_blob(buf_in, ssh, 0);
-	int b = newkeys_to_blob(buf_out, ssh, 1);
-	
-	// Avoid calling the code if the newkeys aren't done initializing.
-	if(a == SSH_ERR_INTERNAL_ERROR || b == SSH_ERR_INTERNAL_ERROR) {
-		printf("\n\ninternal error! (internal keys not yet initialized)\n\n");
-	} else {
-		// these aren't super helpful, but give an idea of the context for the keys.
-		printf("Input buffer info:\n");
-		sshbuf_dump(buf_in, stdout);
-		printf("\n\nkey: %s\niv: %s\n\n\n", ssh->state->newkeys[0]->enc.key, ssh->state->newkeys[0]->enc.iv);
+    if (ssh->state->newkeys[0] == NULL || ssh->state->newkeys[1] == NULL) {
+        return 0;
+    }
 
-		printf("Output buffer info:\n");
-		sshbuf_dump(buf_out, stdout);
-
-		// TODO should IV be blank
-		// This will print the keys in HEX everytime they are re-upped.
+	// WIRESHARK: This will print the keys in HEX everytime they are re-upped.
 		
-		struct sshenc s0 = ssh->state->newkeys[0]->enc;
-		struct sshenc s1 = ssh->state->newkeys[1]->enc;
+	struct sshenc s0 = ssh->state->newkeys[0]->enc;
+	struct sshenc s1 = ssh->state->newkeys[1]->enc;
 		
-		// WIRESHARK: DUMP
-		int i;
-		int len0 = (int) s0.key_len;
-		int len1 = (int) s1.key_len;
+	// WIRESHARK: Start dump.
+	int i;
+	int len0 = (int) s0.key_len;
+	int len1 = (int) s1.key_len;
 
-		debug("WSDUMP KEY_LEN_0 %u %i", s0.key_len, len0);
-		debug("WSDUMP KEY_LEN_1 %u %i", s1.key_len, len1);
+	debug("WSDUMP KEY_LEN_0 %u %i", s0.key_len, len0);
+	debug("WSDUMP KEY_LEN_1 %u %i", s1.key_len, len1);
 
-		char chars[s0.key_len * 2 + 5];
-		for (i = 0; i < len0; i += 1) {
-			sprintf((char*) chars + (2 * i), "%02hhX", s0.key[i]);
-		}
-		debug("WSDUMP KEY_DUMP_0 %s", chars);
-		
-		char chars1[s1.key_len * 2 + 5];
-		for (i = 0; i < len1; i += 1) {
-			sprintf((char*)  (chars1 + (2 * i)), "%02hhX", s1.key[i]);
-		}
-		debug("WSDUMP KEY_DUMP_1 %s", chars1);
+	char chars[s0.key_len * 2 + 5];
+	for (i = 0; i < len0; i += 1) {
+		sprintf((char*) chars + (2 * i), "%02hhX", s0.key[i]);
 	}
+
+	debug("WSDUMP KEY_DUMP_0 %s", chars);
+		
+	char chars1[s1.key_len * 2 + 5];
+	for (i = 0; i < len1; i += 1) {
+	    sprintf((char*)  (chars1 + (2 * i)), "%02hhX", s1.key[i]);
+	}
+
+	debug("WSDUMP KEY_DUMP_1 %s", chars1);
 
 	return 0;
 }
